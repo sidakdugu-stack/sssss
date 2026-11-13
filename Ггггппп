@@ -1,0 +1,55 @@
+-- Справочник типов устройств
+CREATE TABLE device_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+-- Справочник расположений
+CREATE TABLE locations (
+    id SERIAL PRIMARY KEY,
+    building VARCHAR(50),
+    room VARCHAR(20)
+);
+
+-- Таблица устройств
+CREATE TABLE devices (
+    id SERIAL PRIMARY KEY,
+    hostname VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(15) UNIQUE NOT NULL,
+    mac_address VARCHAR(17) UNIQUE,
+    type_id INT REFERENCES device_types(id),
+    location_id INT REFERENCES locations(id),
+    status VARCHAR(20) DEFAULT 'Offline'
+);
+
+-- Справочник метрик
+CREATE TABLE metric_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    unit VARCHAR(20)
+);
+
+-- Журнал метрик (основная таблица данных)
+CREATE TABLE metrics_log (
+    id BIGSERIAL PRIMARY KEY,
+    device_id INT REFERENCES devices(id) ON DELETE CASCADE,
+    metric_type_id INT REFERENCES metric_types(id),
+    value FLOAT NOT NULL,
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Уровни важности событий
+CREATE TABLE alert_levels (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(20) NOT NULL
+);
+
+-- Таблица событий (Алертов)
+CREATE TABLE alerts (
+    id SERIAL PRIMARY KEY,
+    device_id INT REFERENCES devices(id) ON DELETE CASCADE,
+    level_id INT REFERENCES alert_levels(id),
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP
+);
